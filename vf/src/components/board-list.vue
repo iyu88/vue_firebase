@@ -63,6 +63,14 @@
                         Hi
                     </v-card-text>
                     <v-card-actions>
+                        <v-spacer />
+                        <time-display></time-display>
+                    </v-card-actions>
+                    <v-card-actions>
+                        <v-spacer />
+                        <user-name></user-name>
+                    </v-card-actions>
+                    <v-card-actions>
                         <v-spacer/>
                         <v-sheet class="mr-2">
                             <v-icon left>mdi-eye</v-icon>
@@ -83,7 +91,11 @@
     </v-container>
 </template>
 <script>
+import TimeDisplay from '@/components/time-display.vue'
+import UserName from '@/components/user-name.vue'
+
 export default {
+  components: { TimeDisplay, UserName },
   data () {
     return {
       items: ['전체', '일반', '공지', '중요'],

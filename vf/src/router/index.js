@@ -24,13 +24,13 @@ const routes = [
     component: () => import('../views/board/index.vue')
   },
   {
-    path: '/board/:info',
-    name: 'board-info',
-    component: () => import('../views/board/info.vue')
+    path: '/board/:list',
+    name: 'board-list',
+    component: () => import('../views/board/list.vue')
   },
   {
-    path: '/board/:info/:article',
-    name: 'board-info-article',
+    path: '/board/:list/:article',
+    name: 'board-list-article',
     component: () => import('../views/board/article.vue')
   },
   {

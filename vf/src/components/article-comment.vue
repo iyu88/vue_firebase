@@ -5,7 +5,7 @@
             <v-list-item>
                 <v-chip color="info" class="mr-4">
                     <v-avatar>
-                        <v-icon left>mdi-account</v-icon>
+                        <v-icon>mdi-account</v-icon>
                     </v-avatar>사람이름
                 </v-chip>
                 hihi

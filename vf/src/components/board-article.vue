@@ -24,6 +24,14 @@
                 here is the article content
             </v-card-text>
             <v-card-actions>
+                <v-spacer />
+                <time-display></time-display>
+            </v-card-actions>
+            <v-card-actions>
+                <v-spacer />
+                <user-name></user-name>
+            </v-card-actions>
+            <v-card-actions>
                 <v-spacer/>
                 <v-sheet class="mr-2">
                     <v-icon left>mdi-eye</v-icon>
@@ -72,9 +80,11 @@
 </template>
 <script>
 import ArticleComment from '../components/article-comment.vue'
+import TimeDisplay from '@/components/time-display.vue'
+import UserName from '@/components/user-name.vue'
 
 export default {
-  components: { ArticleComment },
+  components: { ArticleComment, TimeDisplay, UserName },
   data () {
     return {}
   },
