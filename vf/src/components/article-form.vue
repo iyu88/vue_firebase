@@ -2,106 +2,93 @@
     <v-container fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
         <v-card>
             <v-card-title>
-            새로운 게시판 생성
+            새로운 게시물 생성
                 <v-spacer />
-                <v-btn icon @click="saveBoard"><v-icon>mdi-content-save</v-icon></v-btn>
+                <v-btn icon @click="saveArticle"><v-icon>mdi-content-save</v-icon></v-btn>
                 <!-- <v-btn icon :to="`/${board}`"><v-icon>mdi-close</v-icon></v-btn> -->
-                <v-btn icon @click="$emit('cancelBoard')"><v-icon>mdi-close</v-icon></v-btn>
+                <v-btn icon @click="$emit('cancelArticle')"><v-icon>mdi-close</v-icon></v-btn>
+                <v-btn icon @click="check"><v-icon>mdi-check</v-icon></v-btn>
             </v-card-title>
             <v-divider />
             <v-card-text>
                 <v-row>
-                    <v-col cols="4">
-                        <v-text-field label="카테고리" outlined clearable />
+                    <v-col cols="6">
+                        <v-select v-model="newArticle_items.category" :items="this.items" outlined label="카테고리를 선택하세요." solo></v-select>
                     </v-col>
-                    <v-col cols="8">
-                        <v-text-field label="태그" outlined clearable />
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="12">
-                        <v-text-field label="제목" outlined clearable />
+                    <v-col cols="6">
+                        <v-select v-model="newArticle_items.tags" :items="this.items" outlined label="태그를 선택하세요." multiple solo chips></v-select>
                     </v-col>
                 </v-row>
                 <v-row>
                     <v-col cols="12">
-                        <v-textarea label="설명" outlined row="3" />
+                        <v-text-field v-model="newArticle_items.title" label="게시물 제목" outlined clearable required/>
+                    </v-col>
+                    <v-col cols="12">
+                        <editor v-model="newArticle_items.content" ref="editor" initialEditType="wysiwyg"></editor>
                     </v-col>
                 </v-row>
-            </v-card-text>
-            <v-card-text>
-                <v-card outlined>
-                    <v-subheader>
-                        등록한 카테고리
-                    </v-subheader>
-                    <v-card-text>
-                        <v-chip color="info" small outlined class="mr-2 mb-2">hi
-                            <v-icon small right @click="removeCategory">mdi-close</v-icon>
-                        </v-chip>
-                    </v-card-text>
-                    <v-card-actions>
-                        <div width="100">
-                            <v-text-field v-model="newCategory" label="카테고리" append-icon="mdi-plus" @click:append="addCategory" outlined hide-details/>
-                        </div>
-                    </v-card-actions>
-                </v-card>
-            </v-card-text>
-            <v-card-text>
-                <v-card outlined>
-                    <v-subheader>
-                        등록한 태그
-                    </v-subheader>
-                    <v-card-text>
-                        <v-chip color="info" small class="mr-2 mb-2">bye
-                            <v-icon small right @click="removeTag">mdi-close</v-icon>
-                        </v-chip>
-                    </v-card-text>
-                    <v-card-actions>
-                        <div width="100">
-                            <v-text-field v-model="newTag" label="태그" append-icon="mdi-plus" @click:append="addTag" outlined hide-details/>
-                        </div>
-                    </v-card-actions>
-                </v-card>
             </v-card-text>
         </v-card>
     </v-container>
 </template>
 <script>
 export default {
-  props: ['newBoard'],
+  props: ['boardTitle'],
   data () {
     return {
-      newBoard_items: {
-        categories: {},
-        tags: {},
-        count: null,
-        created: null,
-        updated: null,
+      items: ['일반', '카테', '태그'],
+      newArticle_items: {
+        category: '',
+        tags: [],
         title: '',
-        description: '',
         uid: '',
-        user: [
-          { displayName: '' },
-          { photoURL: '' },
-          { email: '' }
-        ]
+        user: {
+          displayName: this.$store.state.fireUser.displayName,
+          photoURL: this.$store.state.fireUser.photoURL,
+          email: this.$store.state.fireUser.email
+        }
       }
     }
   },
+  created () {
+    console.log(this.newArticle_items.uid, this.newArticle_items.user)
+  },
   methods: {
-    async saveBoard () {
+    check () {
+      console.log(this.boardTitle)
+      const a = new Date().getTime().toString()
+      console.log(a)
     },
-    removeCategory () {
-      console.log('removeCategory')
-    },
-    addCategory () {
-      console.log('addCategory')
-    },
-    removeTag () {
-      console.log('removeTag')
-    },
-    addTag () {
-      console.log('addTag')
+    async saveArticle () {
+      console.log('save')
+      this.newArticle_items.uid = this.$store.state.fireUser.uid
+      if (this.newArticle_items.uid === '') throw Error('로그인이 필요합니다.')
+      console.log(this.newArticle_items)
+      const md = this.$refs.editor.invoke('getMarkdown')
+      if (!this.newArticle_items.category || !this.newArticle_items.tags || !this.newArticle_items.title || !md) throw Error('필수 항목입니다. 반드시 입력해주세요!')
+      const newSave = {
+        category: this.newArticle_items.category,
+        tags: this.newArticle_items.tags,
+        title: this.newArticle_items.title,
+        pathTo: new Date().getTime().toString(),
+        content: md,
+        uid: this.newArticle_items.uid,
+        user: this.newArticle_items.user,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        commentCount: 0,
+        readCount: 0,
+        likeCount: 0,
+        likeUid: []
+      }
+      try {
+        await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(newSave.pathTo).set(newSave)
+      } finally {
+        this.$toasted.global.notice('Success to Upload!!')
+      }
+      console.log(this.$router)
+      console.log('/board/' + this.boardTitle + '/' + newSave.pathTo)
+      this.$router.push(this.$route.path + '/' + newSave.pathTo)
     }
   }
 }

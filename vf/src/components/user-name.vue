@@ -1,12 +1,13 @@
 <template>
-    <v-chip>
+    <v-chip class="ml-2">
         <v-avatar>
             <v-icon>mdi-account</v-icon>
         </v-avatar>
-        작성자 이름
+        {{ user }}
     </v-chip>
 </template>
 <script>
 export default {
+  props: ['user']
 }
 </script>

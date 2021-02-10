@@ -1,10 +1,10 @@
 <template>
-    <div class="mr-2" italic>
-        <div class="mb-2"> 생성일 : 123 </div>
-        <div> 수정일 : 456 </div>
+    <div class="mr-2 ml-2" italic>
+        {{ time.toDate().toLocaleString() }}
     </div>
 </template>
 <script>
 export default {
+  props: ['time']
 }
 </script>

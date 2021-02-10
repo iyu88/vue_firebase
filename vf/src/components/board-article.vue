@@ -1,18 +1,18 @@
 <template>
-    <v-container fluid>
+    <v-container fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
         <v-card>
             <v-subheader>
-                <v-btn color="info">HAHA
+                <v-btn color="info">{{ item.category }}
                     <v-icon right>mdi-menu-right</v-icon>
                 </v-btn>
-                <v-card-text>
-                    게시물 제목
-                </v-card-text>
+                <v-card-title>
+                    {{ item.title }}
+                </v-card-title>
                 <v-spacer />
-                <v-btn icon @click="addArticle" class="ml-2">
+                <v-btn icon class="ml-2">
                     <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn icon @click="removeArticle" class="ml-2">
+                <v-btn icon class="ml-2">
                     <v-icon>mdi-delete</v-icon>
                 </v-btn>
                 <v-btn icon class="ml-2">
@@ -21,29 +21,33 @@
             </v-subheader>
             <v-divider />
             <v-card-text>
-                here is the article content
+                {{ item.content }}
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <time-display></time-display>
+                생성일 : <time-display :time="item.createdAt"></time-display>
             </v-card-actions>
             <v-card-actions>
                 <v-spacer />
-                <user-name></user-name>
+                수정일 : <time-display :time="item.updatedAt"></time-display>
+            </v-card-actions>
+            <v-card-actions>
+                <v-spacer />
+                작성자 : <user-name :user="item.user.displayName"></user-name>
             </v-card-actions>
             <v-card-actions>
                 <v-spacer/>
                 <v-sheet class="mr-2">
                     <v-icon left>mdi-eye</v-icon>
-                    <span>1</span>
+                    <span>{{ item.readCount }}</span>
                 </v-sheet>
                 <v-sheet class="mr-2">
                     <v-icon left>mdi-comment</v-icon>
-                    <span>1</span>
+                    <span>{{ item.commentCount }}</span>
                 </v-sheet>
                 <v-sheet class="mr-2">
                     <v-icon left>mdi-thumb-up</v-icon>
-                    <span>1</span>
+                    <span>{{ item.likeCount }}</span>
                 </v-sheet>
             </v-card-actions>
             <v-divider/>
@@ -85,15 +89,33 @@ import UserName from '@/components/user-name.vue'
 
 export default {
   components: { ArticleComment, TimeDisplay, UserName },
+  props: ['boardTitle', 'articleTitle'],
   data () {
-    return {}
+    return {
+      items: [],
+      item: [],
+      unsubscribe: null
+    }
+  },
+  created () {
+    this.subscribe()
+  },
+  destroyed () {
+    if (this.unsubscribe) this.unsubscribe()
   },
   methods: {
-    addArticle () {
-      console.log('addArticle')
-    },
-    removeArticle () {
-      console.log('removeArticle')
+    async subscribe () {
+      if (this.unsubscribe) this.unsubscribe()
+      this.unsubscribe = await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).onSnapshot(doc => {
+        if (!doc.exists) {
+          this.items = []
+          return
+        }
+        const temp = doc.data()
+        // temp.createdAt = temp.createdAt.toDate()
+        // temp.updatedAt = temp.updatedAt.toDate()
+        this.item = temp
+      }, console.err)
     }
   }
 }

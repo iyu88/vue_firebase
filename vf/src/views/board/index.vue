@@ -12,16 +12,17 @@
          <v-icon>mdi-check</v-icon>
        </v-btn>
      </v-card-title>
-     <v-card-text>
+     <v-alert type='warning' v-if="!items.length" border="top" icon="mdi-alert-decagram" prominent> 불러올 게시판 목록이 존재하지 않습니다! </v-alert>
+     <v-card-text v-else>
        <v-row>
          <v-col>
            <template v-for="(item, i) in items">
-            <v-card :key="i" x-large class="mr-4 mb-4" :to=item.to exact>
+            <v-card :key="i" x-large class="mr-4 mb-4" :to="`${$route.path}/${item.pathTo}`" exact>
               <v-card-title>
                 {{ item.title }}
               </v-card-title>
               <v-card-text>
-                {{ item.createdAt }}
+                {{ item.createdAt.toDate().toLocaleString() }}
               </v-card-text>
               <v-card-text>
                 {{ item.categories }}
@@ -72,6 +73,7 @@ export default {
             temp.title = item.title
             temp.createdAt = item.createdAt
             temp.categories = item.categories
+            temp.pathTo = item.pathTo
             temp.tags = item.tags
             this.items.push(temp)
             console.log(this.items)
@@ -84,6 +86,7 @@ export default {
     check () {
       this.items.forEach((item) => {
         console.log(item.title)
+        console.log(item.pathTo)
         console.log(item.description)
         console.log(item.categories)
         console.log(item.tags)

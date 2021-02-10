@@ -15,7 +15,7 @@
                         <v-text-field v-model="newBoard_items.title" label="게시판 제목" outlined clearable required />
                     </v-col>
                     <v-col cols="4">
-                        <v-text-field v-model="newPath" label="게시판 경로" outlined clearable required />
+                        <v-text-field v-model="newBoard_items.pathTo" label="게시판 경로" outlined clearable required />
                     </v-col>
                 </v-row>
                 <v-row>
@@ -70,6 +70,7 @@ export default {
         categories: [],
         tags: [],
         title: '',
+        pathTo: '',
         description: '',
         uid: '',
         user: {
@@ -79,8 +80,7 @@ export default {
         }
       },
       newCategory: '',
-      newTag: '',
-      newPath: ''
+      newTag: ''
     }
   },
   created () {
@@ -89,12 +89,13 @@ export default {
   methods: {
     async saveBoard () {
       this.newBoard_items.uid = this.$store.state.fireUser.uid
-      if (this.newBoard_items.uid === '') this.$toasted.global.error('로그인이 필요합니다.')
-      if (!this.newBoard_items.title || !this.newBoard_items.description || !this.newPath) this.$toasted.global.notice('Please fill all the blanks.')
+      if (this.newBoard_items.uid === '') throw Error('로그인이 필요합니다.')
+      if (!this.newBoard_items.title || !this.newBoard_items.description || !this.newBoard_items.pathTo) throw Error('Please fill all the blanks.')
       const newSave = {
         categories: this.newBoard_items.categories,
         tags: this.newBoard_items.tags,
         title: this.newBoard_items.title,
+        pathTo: this.newBoard_items.pathTo.substr(1),
         description: this.newBoard_items.description,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -109,11 +110,11 @@ export default {
         }
       }
       try {
-        await this.$firebase.firestore().collection('boards').doc(this.newPath.substr(1)).set(newSave)
+        await this.$firebase.firestore().collection('boards').doc(this.newBoard_items.pathTo.substr(1)).set(newSave)
       } finally {
         this.$toasted.global.notice('Successfully Uploaded!!')
       }
-      this.$router.push('/board/' + this.newPath.substr(1))
+      this.$router.push('/board/' + this.newBoard_items.pathTo.substr(1))
     },
     removeCategory (category) {
       console.log('removeCategory')

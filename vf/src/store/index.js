@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     editable: false,
-    fireUser: null
+    fireUser: null,
+    boardViewMode: localStorage.getItem('boardViewMode') === 'true'
   },
   mutations: {
     setEdit (state, editable) {
@@ -14,6 +15,10 @@ export default new Vuex.Store({
     },
     setFireUser (state, fu) {
       state.fireUser = fu
+    },
+    toggleViewMode (state) {
+      state.boardViewMode = !state.boardViewMode
+      localStorage.setItem('boardViewMode', state.boardViewMode)
     }
   },
   actions: {
