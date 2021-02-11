@@ -11,7 +11,7 @@ Vue.toasted.register('notice', (payload) => {
 }, {
   icon: 'mdi-bell',
   position: 'bottom-right',
-  duration: 3000,
+  duration: 1000,
   className: 'subheading',
   action: {
     text: '닫기',
@@ -26,7 +26,7 @@ Vue.toasted.register('error', (payload) => {
 }, {
   icon: 'mdi-alert',
   postiion: 'bottom-right',
-  duration: 8000,
+  duration: 2000,
   className: 'text-primary',
   action: {
     text: '닫기',

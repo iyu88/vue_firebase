@@ -3,10 +3,10 @@
     <v-container v-else fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
         <v-card>
             <v-card-title>
-                <span width="100" class="mt-4 mr-4">
-                    <v-select solo dense :items="things" placeholder="전체" outlined small color="info">}</v-select>
+                <span class="mt-4 mr-4">
+                    <v-select solo dense :items="DataOfBoard.categories" placeholder="카테고리 필터" outlined small color="info">}</v-select>
                 </span>
-                게시판 이름
+                {{ DataOfBoard.title }}
                 <v-spacer/>
                     <v-btn icon @click="openInfo">
                         <v-icon>mdi-alert-circle-outline</v-icon>
@@ -17,9 +17,13 @@
                     <v-btn icon @click="newArticle =!newArticle">
                         <v-icon>mdi-plus</v-icon>
                     </v-btn>
+                    <v-btn icon>
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
             </v-card-title>
             <v-divider/>
-            <v-alert v-if="items.length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
+            <v-skeleton-loader v-if="loading" type="card, list-item-three-line" class="pa-6" />
+            <v-alert v-else-if="!loading && items.length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
             <template v-else-if="$store.state.boardViewMode">
                 <v-list-item v-for="(item,i) in items" :key="i" :to="`${$route.path}/${item.pathTo}`">
                     <v-list-item-content>
@@ -94,9 +98,61 @@
                             <span>{{ item.likeCount }}</span>
                         </v-sheet>
                     </v-card-actions>
+                <v-divider />
                 </v-card>
             </template>
         </v-card>
+        <v-dialog v-model="boardInfo" width="400px">
+            <v-card>
+                <v-card-title>
+                    게시판 정보
+                    <v-spacer />
+                    <v-card-actions>
+                        <v-btn icon>
+                            <v-icon>mdi-grease-pencil</v-icon>
+                        </v-btn>
+                        <v-btn icon @click="openInfo">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-card-actions>
+                </v-card-title>
+                <v-card-text>
+                    <v-list-item>
+                    게시판 이름 : {{ DataOfBoard.title }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    생성자 : {{ DataOfBoard.user.displayName }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    생성일 : {{ DataOfBoard.createdAt.toDate().toLocaleString() }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    수정일 : {{ DataOfBoard.updatedAt.toDate().toLocaleString() }}
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    게시판 소개 : {{ DataOfBoard.description}}
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    등록 카테고리 :
+                    <v-chip v-for="(category,i) in DataOfBoard.categories" :key="i" small outlined color="info" class="mr-2 ml-2">
+                        {{ category }}
+                    </v-chip>
+                </v-list-item>
+                <v-divider />
+                <v-list-item>
+                    등록 태그 :
+                    <v-chip v-for="(tag,i) in DataOfBoard.tags" :key="i" small color="info" class="mr-2 ml-2">
+                        {{ tag }}
+                    </v-chip>
+                </v-list-item>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 <script>
@@ -109,10 +165,13 @@ export default {
   props: ['boardTitle'],
   data () {
     return {
-      things: ['전체', '일반', '공지', '중요'],
+      DataOfBoard: [],
       newArticle: false,
+      boardInfo: false,
       items: [],
-      unsubscribe: null
+      ref: null,
+      unsubscribe: null,
+      loading: true
     }
   },
   created () {
@@ -124,23 +183,34 @@ export default {
   methods: {
     async subscribe () {
       if (this.unsubscribe) this.unsubscribe()
-      this.unsubscribe = await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').onSnapshot(sn => {
-        if (sn.empty) {
-          this.items = []
-          return
-        }
-        sn.docs.forEach(doc => {
-          const temp = doc.data()
-          // temp.createdAt = temp.createdAt.toDate().toString()
-          // temp.updatedAt = temp.updatedAt.toDate().toString()
-          this.items.push(temp)
+      this.ref = this.$firebase.firestore().collection('boards').doc(this.boardTitle)
+      const selectItem = await this.ref.get()
+      const boardData = selectItem.data()
+      this.DataOfBoard = boardData
+
+      try {
+        this.unsubscribe = await this.ref.collection('articles').onSnapshot(sn => {
+          if (sn.empty) {
+            this.items = []
+            return
+          }
+          sn.docs.forEach(doc => {
+            const temp = doc.data()
+            // temp.createdAt = temp.createdAt.toDate().toString()
+            // temp.updatedAt = temp.updatedAt.toDate().toString()
+            this.items.push(temp)
+          })
         })
-      })
+      } finally {
+        this.$toasted.global.notice('Data Loaded')
+        this.loading = false
+      }
     },
     toggleForm () {
       this.newArticle = !this.newArticle
     },
     openInfo () {
+      this.boardInfo = !this.boardInfo
     }
   }
 }

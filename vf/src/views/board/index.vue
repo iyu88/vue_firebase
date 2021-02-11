@@ -12,7 +12,8 @@
          <v-icon>mdi-check</v-icon>
        </v-btn>
      </v-card-title>
-     <v-alert type='warning' v-if="!items.length" border="top" icon="mdi-alert-decagram" prominent> 불러올 게시판 목록이 존재하지 않습니다! </v-alert>
+     <v-skeleton-loader v-if="loading" type="card, list-item-three-line" class="pa-6"/>
+     <v-alert type='warning' v-else-if="!loading && !items.length" border="top" icon="mdi-alert-decagram" prominent> 불러올 게시판 목록이 존재하지 않습니다! </v-alert>
      <v-card-text v-else>
        <v-row>
          <v-col>
@@ -21,6 +22,9 @@
               <v-card-title>
                 {{ item.title }}
               </v-card-title>
+              <v-card-text>
+                {{ item.description }}
+              </v-card-text>
               <v-card-text>
                 {{ item.createdAt.toDate().toLocaleString() }}
               </v-card-text>
@@ -47,7 +51,8 @@ export default {
     return {
       newBoard: false,
       unsubscribe: null,
-      items: []
+      items: [],
+      loading: true
     }
   },
   created () {
@@ -58,6 +63,7 @@ export default {
   },
   methods: {
     toggleForm () {
+      if (!this.$store.state.fireUser) throw Error('Please Login first.')
       this.newBoard = !this.newBoard
     },
     async subscribe () {
@@ -71,16 +77,18 @@ export default {
             }
             const temp = []
             temp.title = item.title
+            temp.description = item.description
             temp.createdAt = item.createdAt
             temp.categories = item.categories
             temp.pathTo = item.pathTo
             temp.tags = item.tags
             this.items.push(temp)
-            console.log(this.items)
+            // console.log(this.items)
           })
         })
       } finally {
         this.$toasted.global.notice('Data Loaded')
+        this.loading = false
       }
     },
     check () {

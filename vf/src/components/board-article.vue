@@ -12,10 +12,10 @@
                 <v-btn icon class="ml-2">
                     <v-icon>mdi-pencil</v-icon>
                 </v-btn>
-                <v-btn icon class="ml-2">
+                <v-btn icon class="ml-2" @click="deleteArticle">
                     <v-icon>mdi-delete</v-icon>
                 </v-btn>
-                <v-btn icon class="ml-2">
+                <v-btn icon class="ml-2" :to="`/board/${boardTitle}`">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </v-subheader>
@@ -61,7 +61,7 @@
                     </v-col>
                     <v-col cols="4" class="d-flex">
                         <v-divider vertical></v-divider>
-                        <v-btn text block>
+                        <v-btn text block :to="`/board/${this.boardTitle}`">
                             <v-icon>mdi-menu</v-icon>
                             목록
                         </v-btn>
@@ -94,6 +94,7 @@ export default {
     return {
       items: [],
       item: [],
+      ref: null,
       unsubscribe: null
     }
   },
@@ -106,7 +107,8 @@ export default {
   methods: {
     async subscribe () {
       if (this.unsubscribe) this.unsubscribe()
-      this.unsubscribe = await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).onSnapshot(doc => {
+      this.ref = this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle)
+      this.unsubscribe = await this.ref.onSnapshot(doc => {
         if (!doc.exists) {
           this.items = []
           return
@@ -116,6 +118,11 @@ export default {
         // temp.updatedAt = temp.updatedAt.toDate()
         this.item = temp
       }, console.err)
+    },
+    deleteArticle () {
+      this.ref.delete()
+      this.$toasted.global.notice('The Article has been Successfully Deleted')
+      this.$router.push('/board/' + this.boardTitle)
     }
   }
 }
