@@ -14,10 +14,10 @@
                     <v-btn icon @click="$store.commit('toggleViewMode')">
                         <v-icon>mdi-text-box-outline</v-icon>
                     </v-btn>
-                    <v-btn icon @click="newArticle =!newArticle">
+                    <v-btn icon @click="toggleForm">
                         <v-icon>mdi-plus</v-icon>
                     </v-btn>
-                    <v-btn icon>
+                    <v-btn icon :to="`/board`">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
             </v-card-title>
@@ -53,7 +53,7 @@
                             <span>{{ item.likeCount }}</span>
                         </v-sheet>
                         <v-sheet class="mt-2">
-                            <user-name :user="item.user.displayName"></user-name>
+                            <user-name :user="item.user"></user-name>
                         </v-sheet>
                     </v-list-item-action>
                 </v-list-item>
@@ -81,7 +81,7 @@
                     </v-card-actions>
                     <v-card-actions>
                         <v-spacer />
-                        작성자 : <user-name :user="item.user.displayName"></user-name>
+                        작성자 : <user-name :user="item.user"></user-name>
                     </v-card-actions>
                     <v-card-actions>
                         <v-spacer/>
@@ -122,15 +122,15 @@
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
-                    생성자 : {{ DataOfBoard.user.displayName }}
+                    생성자 : <user-name :user="DataOfBoard.user"></user-name>
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
-                    생성일 : {{ DataOfBoard.createdAt.toDate().toLocaleString() }}
+                    생성일 : <time-display :time="DataOfBoard.createdAt"></time-display>
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
-                    수정일 : {{ DataOfBoard.updatedAt.toDate().toLocaleString() }}
+                    수정일 : <time-display :time="DataOfBoard.updatedAt"></time-display>
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
@@ -207,6 +207,7 @@ export default {
       }
     },
     toggleForm () {
+      if (!this.$store.state.fireUser) throw Error('Please Login first.')
       this.newArticle = !this.newArticle
     },
     openInfo () {

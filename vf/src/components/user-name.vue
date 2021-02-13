@@ -1,9 +1,9 @@
 <template>
-    <v-chip class="ml-2">
-        <v-avatar>
-            <v-icon>mdi-account</v-icon>
+    <v-chip class="ml-2" color="info">
+        <v-avatar left>
+            <v-img :src="user.photoURL"></v-img>
         </v-avatar>
-        {{ user }}
+        {{ user.displayName }}
     </v-chip>
 </template>
 <script>

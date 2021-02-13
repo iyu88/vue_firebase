@@ -1,6 +1,7 @@
 <template>
     <v-container fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
-        <v-card>
+        <article-form v-if="editing" :boardTitle="this.boardTitle" :articleTitle="this.articleTitle" v-on:cancelEditing="editArticle"></article-form>
+        <v-card v-else>
             <v-subheader>
                 <v-btn color="info">{{ item.category }}
                     <v-icon right>mdi-menu-right</v-icon>
@@ -9,7 +10,7 @@
                     {{ item.title }}
                 </v-card-title>
                 <v-spacer />
-                <v-btn icon class="ml-2">
+                <v-btn icon class="ml-2" @click="editArticle">
                     <v-icon>mdi-pencil</v-icon>
                 </v-btn>
                 <v-btn icon class="ml-2" @click="deleteArticle">
@@ -33,7 +34,7 @@
             </v-card-actions>
             <v-card-actions>
                 <v-spacer />
-                작성자 : <user-name :user="item.user.displayName"></user-name>
+                작성자 : <user-name :user="item.user"></user-name>
             </v-card-actions>
             <v-card-actions>
                 <v-spacer/>
@@ -77,25 +78,27 @@
             </v-card-actions>
             <v-divider />
             <v-card-text>
-                <article-comment></article-comment>
+                <article-comment :boardTitle="boardTitle" :articleTitle="articleTitle"></article-comment>
             </v-card-text>
         </v-card>
     </v-container>
 </template>
 <script>
-import ArticleComment from '../components/article-comment.vue'
+import ArticleComment from '@/components/article-comment.vue'
+import ArticleForm from '@/components/article-form.vue'
 import TimeDisplay from '@/components/time-display.vue'
 import UserName from '@/components/user-name.vue'
 
 export default {
-  components: { ArticleComment, TimeDisplay, UserName },
+  components: { ArticleComment, ArticleForm, TimeDisplay, UserName },
   props: ['boardTitle', 'articleTitle'],
   data () {
     return {
       items: [],
       item: [],
       ref: null,
-      unsubscribe: null
+      unsubscribe: null,
+      editing: false
     }
   },
   created () {
@@ -123,6 +126,10 @@ export default {
       this.ref.delete()
       this.$toasted.global.notice('The Article has been Successfully Deleted')
       this.$router.push('/board/' + this.boardTitle)
+    },
+    editArticle () {
+      console.log('editArticle')
+      this.editing = !this.editing
     }
   }
 }
