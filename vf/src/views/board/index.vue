@@ -13,8 +13,7 @@
        </v-btn>
      </v-card-title>
      <v-skeleton-loader v-if="loading" type="card, list-item-three-line" class="pa-6"/>
-     <v-alert type='warning' v-else-if="!loading && !items.length" border="top" icon="mdi-alert-decagram" prominent> 불러올 게시판 목록이 존재하지 않습니다! </v-alert>
-     <v-card-text v-else>
+     <v-card-text v-else-if="!loading && items.length">
        <v-row>
          <v-col>
            <template v-for="(item, i) in items">
@@ -39,6 +38,7 @@
          </v-col>
        </v-row>
      </v-card-text>
+    <v-alert type='warning' v-else-if="!loading && !items.length" border="top" icon="mdi-alert-decagram" prominent> 불러올 게시판 목록이 존재하지 않습니다! </v-alert>
   </v-card>
   </v-container>
 </template>

@@ -1,6 +1,7 @@
 <template>
     <v-container fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
         <article-form v-if="editing" :boardTitle="this.boardTitle" :articleTitle="this.articleTitle" v-on:cancelEditing="editArticle"></article-form>
+        <v-skeleton-loader v-else-if="!editing && Object.keys(item).length === 0" type="card, list-item-three-line" class="pa-6" />
         <v-card v-else>
             <v-subheader>
                 <v-btn color="info">{{ item.category }}
@@ -94,7 +95,6 @@ export default {
   props: ['boardTitle', 'articleTitle'],
   data () {
     return {
-      items: [],
       item: [],
       ref: null,
       unsubscribe: null,
@@ -113,7 +113,7 @@ export default {
       this.ref = this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle)
       this.unsubscribe = await this.ref.onSnapshot(doc => {
         if (!doc.exists) {
-          this.items = []
+          this.item = []
           return
         }
         const temp = doc.data()

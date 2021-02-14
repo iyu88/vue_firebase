@@ -1,5 +1,5 @@
 <template>
-    <div class="mr-2 ml-2" italic>
+    <div class="mr-2 ml-2">
         {{ time.toDate().toLocaleString() }}
     </div>
 </template>

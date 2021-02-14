@@ -23,8 +23,7 @@
             </v-card-title>
             <v-divider/>
             <v-skeleton-loader v-if="loading" type="card, list-item-three-line" class="pa-6" />
-            <v-alert v-else-if="!loading && items.length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
-            <template v-else-if="$store.state.boardViewMode">
+            <template v-else-if="!loading && $store.state.boardViewMode">
                 <v-list-item v-for="(item,i) in items" :key="i" :to="`${$route.path}/${item.pathTo}`">
                     <v-list-item-content>
                         <v-list-item-title>
@@ -58,7 +57,7 @@
                     </v-list-item-action>
                 </v-list-item>
             </template>
-            <template v-else v-for="(item,i) in items">
+            <template v-else-if="!loading && !$store.state.boardViewMode" v-for="(item,i) in items">
                 <v-card :key="i" :to="`${$route.path}/${item.pathTo}`">
                     <v-subheader>
                         <v-btn color="info" small class="mr-2"> {{ item.category }}
@@ -101,6 +100,7 @@
                 <v-divider />
                 </v-card>
             </template>
+            <v-alert v-else-if="!loading && items.length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
         </v-card>
         <v-dialog v-model="boardInfo" width="400px">
             <v-card>
