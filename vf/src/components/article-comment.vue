@@ -5,7 +5,9 @@
           <template v-for="(item, i) in items">
             <v-list :key="i">
               <v-list-item>
-                <user-name :user="item.user"></user-name>
+                <span class="ml-2" >
+                  <user-name :user="item.user"></user-name>
+                </span>
                 <time-display :time="item.updatedAt"></time-display>
                 <v-spacer />
                 <v-btn icon class="mr-2" @click="toggleComment(item)"><v-icon>mdi-pencil</v-icon></v-btn>

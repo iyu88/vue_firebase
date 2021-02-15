@@ -19,19 +19,19 @@
            <template v-for="(item, i) in items">
             <v-card :key="i" x-large class="mr-4 mb-4" :to="`${$route.path}/${item.pathTo}`" exact>
               <v-card-title>
-                {{ item.title }}
+                이름 : {{ item.title }}
               </v-card-title>
               <v-card-text>
-                {{ item.description }}
+                한 줄 설명 : {{ item.description }}
               </v-card-text>
               <v-card-text>
-                {{ item.createdAt.toDate().toLocaleString() }}
+                생성일 : {{ item.createdAt.toDate().toLocaleString() }}
               </v-card-text>
               <v-card-text>
-                {{ item.categories }}
+                등록된 카테고리 : {{ item.categories }}
               </v-card-text>
               <v-card-text>
-                {{ item.tags }}
+                등록된 태그 : {{ item.tags }}
               </v-card-text>
             </v-card>
           </template>

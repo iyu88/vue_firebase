@@ -34,6 +34,16 @@ const routes = [
     component: () => import('../views/board/article.vue')
   },
   {
+    path: '/chatRoom',
+    name: 'chatRoom',
+    component: () => import('../views/chatRoom/index.vue')
+  },
+  {
+    path: '/chatRoom/:roomNumber',
+    name: 'chatRoom-roomNumber',
+    component: () => import('../views/chatRoom/roomNumber.vue')
+  },
+  {
     path: '*',
     name: 'error',
     component: () => import('../views/error.vue')

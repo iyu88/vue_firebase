@@ -3,10 +3,12 @@
     <v-container v-else fluid :class="this.$vuetify.breakpoint.xs ? 'pa-0' : ''">
         <v-card>
             <v-card-title>
-                <span class="mt-4 mr-4">
-                    <v-select solo dense :items="DataOfBoard.categories" placeholder="카테고리 필터" outlined small color="info">}</v-select>
-                </span>
-                {{ DataOfBoard.title }}
+                <v-col cols="2" >
+                    <v-select solo dense v-model="filteredCategory" :items="DataOfBoard.categories" placeholder="카테고리 필터" outlined small color="info" hide-details @change="changeCategory"></v-select>
+                </v-col>
+                <v-col cols="4">
+                    {{ DataOfBoard.title }}
+                </v-col>
                 <v-spacer/>
                     <v-btn icon @click="openInfo">
                         <v-icon>mdi-alert-circle-outline</v-icon>
@@ -22,8 +24,8 @@
                     </v-btn>
             </v-card-title>
             <v-divider/>
-            <v-skeleton-loader v-if="loading" type="card, list-item-three-line" class="pa-6" />
-            <template v-else-if="!loading && $store.state.boardViewMode">
+            <v-skeleton-loader v-if="loading && Object.keys(items)" type="card, list-item-three-line" class="pa-6" />
+            <template v-else-if="!loading && $store.state.boardViewMode && Object.keys(items).length > 0">
                 <v-list-item v-for="(item,i) in items" :key="i" :to="`${$route.path}/${item.pathTo}`">
                     <v-list-item-content>
                         <v-list-item-title>
@@ -57,7 +59,7 @@
                     </v-list-item-action>
                 </v-list-item>
             </template>
-            <template v-else-if="!loading && !$store.state.boardViewMode" v-for="(item,i) in items">
+            <template v-else-if="!loading && !$store.state.boardViewMode && Object.keys(items).length > 0" v-for="(item,i) in items">
                 <v-card :key="i" :to="`${$route.path}/${item.pathTo}`">
                     <v-subheader>
                         <v-btn color="info" small class="mr-2"> {{ item.category }}
@@ -80,7 +82,10 @@
                     </v-card-actions>
                     <v-card-actions>
                         <v-spacer />
-                        작성자 : <user-name :user="item.user"></user-name>
+                        작성자 :
+                        <span class="ml-2">
+                          <user-name :user="item.user"></user-name>
+                        </span>
                     </v-card-actions>
                     <v-card-actions>
                         <v-spacer/>
@@ -100,7 +105,7 @@
                 <v-divider />
                 </v-card>
             </template>
-            <v-alert v-else-if="!loading && items.length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
+            <v-alert v-else-if="!loading && Object.keys(items).length === 0" type="warning" border="top" icon="mdi-alert-decagram" prominent class="ma-2">읽어올 게시물이 존재하지 않습니다.</v-alert>
         </v-card>
         <v-dialog v-model="boardInfo" width="400px">
             <v-card>
@@ -122,7 +127,10 @@
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
-                    생성자 : <user-name :user="DataOfBoard.user"></user-name>
+                    생성자 :
+                    <span class="ml-2">
+                        <user-name :user="DataOfBoard.user"></user-name>
+                    </span>
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
@@ -139,14 +147,14 @@
                 <v-divider />
                 <v-list-item>
                     등록 카테고리 :
-                    <v-chip v-for="(category,i) in DataOfBoard.categories" :key="i" small outlined color="info" class="mr-2 ml-2">
+                    <v-chip v-for="(category,i) in DataOfBoard.categories" :key="i" small outlined color="info" class="ml-2">
                         {{ category }}
                     </v-chip>
                 </v-list-item>
                 <v-divider />
                 <v-list-item>
                     등록 태그 :
-                    <v-chip v-for="(tag,i) in DataOfBoard.tags" :key="i" small color="info" class="mr-2 ml-2">
+                    <v-chip v-for="(tag,i) in DataOfBoard.tags" :key="i" small color="info" class="ml-2">
                         {{ tag }}
                     </v-chip>
                 </v-list-item>
@@ -171,7 +179,8 @@ export default {
       items: [],
       ref: null,
       unsubscribe: null,
-      loading: true
+      loading: true,
+      filteredCategory: null
     }
   },
   created () {
@@ -204,6 +213,7 @@ export default {
       } finally {
         this.$toasted.global.notice('Data Loaded')
         this.loading = false
+        console.log(Object.keys(this.items).length)
       }
     },
     toggleForm () {
@@ -212,6 +222,10 @@ export default {
     },
     openInfo () {
       this.boardInfo = !this.boardInfo
+    },
+    changeCategory () {
+      console.log(this.filteredCategory)
+      this.$router.push({ path: this.$route.path, query: { category: this.filteredCategory } })
     }
   }
 }

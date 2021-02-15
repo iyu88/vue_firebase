@@ -13,7 +13,7 @@
         </v-card>
     </v-menu>
 
-    <v-menu offset-y v-else>
+    <v-menu offset-y v-else-if="$store.state.fireUser">
         <template v-slot:activator="{ on }">
             <v-btn icon v-on="on">
                 <v-avatar size="32">
@@ -25,7 +25,7 @@
             <v-card-title>정보</v-card-title>
             <v-divider/>
             <v-card-actions>
-                <v-btn color="" dark @click="signOut" block>로그아웃</v-btn>
+              <v-btn color="" dark @click="signOut" block>로그아웃</v-btn>
             </v-card-actions>
         </v-card>
     </v-menu>

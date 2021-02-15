@@ -35,7 +35,10 @@
             </v-card-actions>
             <v-card-actions>
                 <v-spacer />
-                작성자 : <user-name :user="item.user"></user-name>
+                작성자 :
+                <span class="ml-2">
+                    <user-name :user="item.user"></user-name>
+                </span>
             </v-card-actions>
             <v-card-actions>
                 <v-spacer/>
