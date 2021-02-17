@@ -32,7 +32,7 @@
                 <v-list v-else>
                     <template v-for="(room, i) in rooms">
                         <v-list-item :key="i" :to="`${$route.path}/${room.uid}`">
-                            {{ room.chatTitle }}
+                            {{ room.chatTitle }} / [ 인원수 : {{ room.userList.length }} ]
                             <v-spacer />
                             개설자 :
                             <span class="ml-2">
@@ -104,7 +104,8 @@ export default {
         user: {
           displayName: this.$store.state.fireUser.displayName,
           photoURL: this.$store.state.fireUser.photoURL,
-          email: this.$store.state.fireUser.email
+          email: this.$store.state.fireUser.email,
+          uid: this.$store.state.fireUser.uid
         }
       }
       try {
@@ -112,7 +113,7 @@ export default {
       } finally {
         this.newChat = !this.newChat
         this.chatTitle = ''
-        this.$$toasted.global.notice('Chat List Updated')
+        this.$toasted.global.notice('Chat List Updated')
       }
     }
   }

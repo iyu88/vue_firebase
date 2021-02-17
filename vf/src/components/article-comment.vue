@@ -50,6 +50,7 @@ export default {
   methods: {
     async subscribe () {
       this.ref = this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).collection('comments')
+      this.items = []
       this.unsubscribe = await this.ref.onSnapshot(sn => {
         if (sn.empty) {
           this.items = []
