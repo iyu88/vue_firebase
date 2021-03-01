@@ -73,6 +73,7 @@ export default {
         pathTo: '',
         description: '',
         uid: '',
+        id: '',
         user: {
           displayName: this.$store.state.fireUser.displayName,
           photoURL: this.$store.state.fireUser.photoURL,
@@ -103,6 +104,7 @@ export default {
         commentCount: 0,
         likeCount: 0,
         uid: this.$store.state.fireUser.uid,
+        id: new Date().getTime().toString(),
         user: {
           displayName: this.newBoard_items.user.displayName,
           photoURL: this.newBoard_items.user.photoURL,

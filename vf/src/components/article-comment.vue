@@ -15,19 +15,24 @@
                 <v-btn icon class="mr-2"><v-icon>mdi-thumb-up</v-icon></v-btn>
                 <span>{{ item.likeCount }}</span>
               </v-list-item>
-              <span class="ml-6">
+              <div class="ml-6 comment">
               {{ item.content }}
-              </span>
+              </div>
               <v-textarea v-if="item.edit" v-model="item.content" rows="2" auto-grow outlined append-icon="mdi-comment-plus" @click:append="editComment(item)" clearable hide-details></v-textarea>
               <v-divider class="mt-4" />
             </v-list>
           </template>
+          <v-btn v-if="lastDoc" @click="more" v-intersect='onIntersect' text block color="primary">
+            더보기
+          </v-btn>
         </v-list>
     </div>
 </template>
 <script>
+import { last } from 'lodash'
 import TimeDisplay from '@/components/time-display.vue'
 import UserName from '@/components/user-name.vue'
+const LIMIT = 5
 
 export default {
   props: ['boardTitle', 'articleTitle'],
@@ -38,7 +43,8 @@ export default {
       userComment: '',
       unsubscribe: null,
       ref: null,
-      isEditing: false
+      isEditing: false,
+      lastDoc: null
     }
   },
   created () {
@@ -50,14 +56,14 @@ export default {
   methods: {
     async subscribe () {
       this.ref = this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).collection('comments')
-      this.items = []
-      this.unsubscribe = await this.ref.onSnapshot(sn => {
+      this.unsubscribe = await this.ref.orderBy('createdAt', 'desc').limit(LIMIT).onSnapshot(sn => {
         if (sn.empty) {
           this.items = []
           return
         }
+        this.lastDoc = last(sn.docs)
         sn.docs.forEach(doc => {
-          const findItem = this.items.find(item => doc.uid === item.uid)
+          const findItem = this.items.find(item => doc.id === item.id)
           const temp = doc.data()
           if (!findItem) {
             temp.edit = false
@@ -68,6 +74,11 @@ export default {
             findItem.likeCount = temp.likeCount
             findItem.likeUid = temp.likeUid
           }
+        })
+        this.items.sort((before, after) => {
+          const beforeid = Number(before.uid)
+          const afterid = Number(after.uid)
+          return afterid - beforeid
         })
       }, console.err)
     },
@@ -81,7 +92,8 @@ export default {
         content: this.userComment,
         likeCount: 0,
         likeUid: [],
-        uid: new Date().getTime().toString(),
+        uid: this.$store.state.fireUser.uid,
+        id: new Date().getTime().toString(),
         user: {
           displayName: this.$store.state.fireUser.displayName,
           photoURL: this.$store.state.fireUser.photoURL,
@@ -90,19 +102,28 @@ export default {
       }
       try {
         this.items = []
-        await this.ref.doc(newComment.uid).set(newComment)
+        // const batch = this.$firebase.firestore().batch()
+        // batch.update(this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle), {commentCount : this.$firebase.firestore.FieldValue.increment(1) })
+        // batch.set(this.ref.doc(newComment.uid), newComment)
+        // await batch.commit()
+        await this.ref.doc(newComment.id).set(newComment)
       } finally {
         this.$toasted.global.notice('Successfully Uploaded')
         this.userComment = ''
       }
     },
-    deleteComment (item) {
+    async deleteComment (item) {
       if (!this.$store.state.fireUser) this.$toasted.global.error('로그인이 필요한 서비스입니다.')
       // this.items.splice(item, 1)
       console.log(this.items)
       try {
-        this.ref.doc(item.uid).delete()
-        this.subscribe()
+        // const batch = this.$firebase.firestore().batch()
+        // batch.update(this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle), {commentCount : this.$firebase.firestore.FieldValue.increment(-1) })
+        // batch.delete(this.ref.doc(item.uid))
+        // await batch.commit()
+        await this.ref.doc(item.id).delete()
+        const i = this.items.findIndex(el => el.id === item.id)
+        this.items.splice(i, 1)
       } finally {
         this.$toasted.global.notice('The comment has been successfully deleted.')
       }
@@ -121,6 +142,7 @@ export default {
         likeCount: item.likeCount,
         likeUid: item.likeUid,
         uid: item.uid,
+        id: new Date().getTime().toString(),
         user: {
           displayName: this.$store.state.fireUser.displayName,
           photoURL: this.$store.state.fireUser.photoURL,
@@ -128,14 +150,42 @@ export default {
         }
       }
       try {
-        console.log(newEditComment.uid)
+        console.log(newEditComment.id)
         this.items = []
-        await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).collection('comments').doc(newEditComment.uid).update(newEditComment)
+        await this.$firebase.firestore().collection('boards').doc(this.boardTitle).collection('articles').doc(this.articleTitle).collection('comments').doc(newEditComment.id).update(newEditComment)
       } finally {
         item.edit = false
         this.$toasted.global.notice('Successfully Editted')
       }
+    },
+    async more () {
+      if (!this.lastDoc) this.$toasted.global.error('No more Data')
+      this.$toasted.global.notice('Load More')
+      const sn = await this.ref.orderBy('createdAt', 'desc').startAfter(this.lastDoc).limit(LIMIT).get()
+      this.lastDoc = last(sn.docs)
+      sn.docs.forEach(doc => {
+        const exists = this.items.some(item => doc.id === item.id)
+        if (!exists) {
+          const item = doc.data()
+          item.edit = false
+          this.items.push(item)
+        }
+      })
+      this.items.sort((before, after) => {
+        const beforeid = Number(before.id)
+        const afterid = Number(after.id)
+        return afterid - beforeid
+      })
+    },
+    onIntersect (entries, observer, isIntersecting) {
+      if (isIntersecting) this.more()
     }
   }
 }
 </script>
+
+<style scoped>
+.comment {
+  white-space: pre-wrap;
+}
+</style>

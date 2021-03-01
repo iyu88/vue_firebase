@@ -198,7 +198,7 @@ export default {
       this.DataOfBoard = boardData
 
       try {
-        this.unsubscribe = await this.ref.collection('articles').onSnapshot(sn => {
+        this.unsubscribe = await this.ref.collection('articles').orderBy('createdAt', 'desc').onSnapshot(sn => {
           if (sn.empty) {
             this.items = []
             return

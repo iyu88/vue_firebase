@@ -43,7 +43,7 @@
             </v-card-title>
             <v-card-text>
               <v-card outlined>
-                <v-list height="500px">
+                <v-list height="500px" class="scrollable">
                   <template v-for="(log, i) in chatLogs">
                     <v-list-item v-if="log.user.uid === fireUser" :key="i">
                       <v-spacer />
@@ -71,6 +71,7 @@
     </v-container>
 </template>
 <script>
+// import { last } from 'lodash'
 import UserName from '@/components/user-name.vue'
 import TimeDisplay from '@/components/time-display.vue'
 
@@ -84,7 +85,8 @@ export default {
       myMessage: '',
       userList: false,
       loading: false,
-      unsubscribe: null
+      unsubscribe: null,
+      lastMessage: null
     }
   },
   created () {
@@ -125,15 +127,17 @@ export default {
     async subscribe () {
       if (this.unsubscribe) this.unsubscribe()
       this.chatLogs = []
-      this.unsubscribe = await this.$firebase.firestore().collection('chats').doc(this.chatNumberId).collection('logs').onSnapshot(sn => {
+      this.unsubscribe = await this.$firebase.firestore().collection('chats').doc(this.chatNumberId).collection('logs').orderBy('createdAt', 'asc').onSnapshot(sn => {
         if (sn.empty) {
           this.chatLogs = []
           return
         }
+        // this.lastMessage = last(sn.docs)
         sn.docs.forEach(doc => {
-          const findLog = this.chatLogs.find(log => doc.uid === log.uid)
+          const findLog = this.chatLogs.find(log => doc.id === log.id)
           const temp = doc.data()
           if (!findLog) {
+            // temp.id = doc.id
             this.chatLogs.push(temp)
           } else {
             findLog.content = temp.content
@@ -150,7 +154,8 @@ export default {
       const newMessage = {
         content: this.myMessage,
         createdAt: new Date(),
-        uid: new Date().getTime().toString(),
+        uid: this.$store.state.fireUser.uid,
+        id: new Date().getTime().toString(),
         user: {
           displayName: this.$store.state.fireUser.displayName,
           photoURL: this.$store.state.fireUser.photoURL,
@@ -160,7 +165,7 @@ export default {
       }
       try {
         this.chatLogs = []
-        await this.$firebase.firestore().collection('chats').doc(this.chatNumberId).collection('logs').doc(newMessage.uid).set(newMessage)
+        await this.$firebase.firestore().collection('chats').doc(this.chatNumberId).collection('logs').doc(newMessage.id).set(newMessage)
       } finally {
         this.$toasted.global.notice('Send Message')
         this.myMessage = ''
@@ -172,3 +177,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.scrollable {
+  overflow-y : auto;
+}
+</style>
